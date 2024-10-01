@@ -26,6 +26,7 @@ add_definitions("-DNOMINMAX -DFMT_HEADER_ONLY  -DCORK_DEBUG -DANSI_DECLARATORS -
 # removed -DCPU86
 
 option(BUILD_PYTHON "Builds a python extension" ON)
+option(BUILD_STATIC "Build cork standalone statically" OFF)
 
 if(WIN32)
     # Remove Security definitions for the library
@@ -195,7 +196,11 @@ if(BUILD_PYTHON)
 else(BUILD_PYTHON)
     message(STATUS "Building Cork Module Standalone - Dynamic Library")
 
-    add_library(cork SHARED ${LIBCORK_SRCS})
+    if(BUILD_STATIC)
+        add_library(cork STATIC ${LIBCORK_SRCS})
+    else(BUILD_STATIC)
+        add_library(cork SHARED ${LIBCORK_SRCS})
+    endif(BUILD_STATIC)
     target_link_libraries(cork ${PYCORK_LIBS})
 
     GENERATE_EXPORT_HEADER(cork
