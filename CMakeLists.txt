@@ -239,6 +239,11 @@ if(BUILD_PYTHON)
      target_link_libraries(main cork_static ${PYCORK_LIBS})
 
     install(TARGETS pycork DESTINATION lib/pycork)
+    install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/CORK_Export.h
+    ${APP_H_SRCS}
+    DESTINATION include/pycork
+)
 
     #install(TARGETS mpir_static DESTINATION )
 else(BUILD_PYTHON)
@@ -246,14 +251,17 @@ else(BUILD_PYTHON)
 
     add_executable(main ${App_SRCS})
     target_link_libraries(main cork ${PYCORK_LIBS})
+    install(TARGETS cork DESTINATION lib/cork)
+    #install(FILES
+    #${CMAKE_CURRENT_BINARY_DIR}/CORK_Export.h
+    #${APP_H_SRCS}
+    #DESTINATION include/cork
+    #)
+    install(DIRECTORY cork/ DESTINATION include/cork FILES_MATCHING REGEX "/.*(\.h|\.tpp)$")
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CORK_Export.h DESTINATION include/cork)
+    install(DIRECTORY external/eigen/ DESTINATION include/eigen FILES_MATCHING REGEX "/([^.]+|.*\.h)$")
 
     #install(TARGETS mpir DESTINATION )
 
 endif(BUILD_PYTHON)
-
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/CORK_Export.h
-    ${APP_H_SRCS}
-    DESTINATION include/pycork
-)
 
