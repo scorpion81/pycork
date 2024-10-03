@@ -611,8 +611,8 @@ endif(BUILD_PYTHON)
 
 #add_library(mpir SHARED ${ALL_FILES})
 
-#install(TARGETS mpir DESTINATION lib)
-#install(TARGETS mpir DESTINATION bin)
+install(TARGETS mpir DESTINATION lib)
+install(TARGETS mpir DESTINATION bin)
 install(FILES "${PROJECT_BINARY_DIR}/mpir/mpir.h" "${PROJECT_BINARY_DIR}/mpir/gmp.h" "${PROJECT_BINARY_DIR}/mpir/gmpxx.h" "${PROJECT_BINARY_DIR}/mpir/mpirxx.h"
   DESTINATION include
   )
