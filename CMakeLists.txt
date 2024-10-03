@@ -194,7 +194,7 @@ if(BUILD_PYTHON)
 
 
 else(BUILD_PYTHON)
-    message(STATUS "Building Cork Module Standalone - Dynamic Library")
+    message(STATUS "Building Cork Module Standalone - Library")
 
     if(BUILD_STATIC)
         add_library(cork STATIC ${LIBCORK_SRCS})
@@ -256,6 +256,17 @@ else(BUILD_PYTHON)
 
 
     add_executable(main ${App_SRCS})
+    
+    if(BUILD_STATIC)
+        if (MSVC)
+            set_property(TARGET main PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        endif()
+    else(BUILD_STATIC)
+        if (MSVC)
+            set_property(TARGET main PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+        endif()
+    endif(BUILD_STATIC)
+
     target_link_libraries(main cork ${PYCORK_LIBS})
     install(TARGETS cork DESTINATION lib/cork)
     #install(FILES
