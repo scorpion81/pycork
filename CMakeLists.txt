@@ -39,6 +39,7 @@ if(WIN32)
         set(COMMON_LANGUAGE_RUNTIME "")
         set(EIGEN3_INCLUDE_DIR external/eigen)
 
+        add_compile_definitions(_USE_MATH_DEFINES)
         add_compile_options(
             "/GS-"
             "/INCREMENTAL:NO")
