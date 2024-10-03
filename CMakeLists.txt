@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.15)
+cmake_policy(SET CMP0091 NEW)
 
 project(pycork VERSION 0.1.3)
 
@@ -38,8 +39,6 @@ if(WIN32)
 
         set(COMMON_LANGUAGE_RUNTIME "")
         set(EIGEN3_INCLUDE_DIR external/eigen)
-
-        add_compile_definitions(_USE_MATH_DEFINES)
         add_compile_options(
             "/GS-"
             "/INCREMENTAL:NO")
@@ -199,8 +198,14 @@ else(BUILD_PYTHON)
 
     if(BUILD_STATIC)
         add_library(cork STATIC ${LIBCORK_SRCS})
+        if (MSVC)
+            set_property(TARGET cork PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        endif()
     else(BUILD_STATIC)
         add_library(cork SHARED ${LIBCORK_SRCS})
+        if (MSVC)
+            set_property(TARGET cork PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+        endif()
     endif(BUILD_STATIC)
     target_link_libraries(cork ${PYCORK_LIBS})
 
