@@ -59,7 +59,7 @@ class CMakeBuild(build_ext):
             build_args += ['--', '/m']
         elif platform.system() == "Darwin":
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-            cmake_args += ['-DCMAKE_OSX_ARCHITECTURES=x86_64|arm64|arm64e']
+            cmake_args += ['-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64;arm64e']
             build_args += ['--', '-j4']
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
