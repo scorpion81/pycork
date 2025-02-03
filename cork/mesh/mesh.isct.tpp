@@ -1078,8 +1078,10 @@ bool Mesh<VertData,TriData>::IsctProblem::hasIntersections()
     });
     
     if(empty3d::degeneracy_count > 0 || foundIsct) {
-        std::cout << "This self-intersection might be spurious. "
-                     "Degeneracies were detected." << std::endl;
+        // this printout happens quite frequently but seems this condition
+        // has no serious visible consequences, so testwise silencing it.
+        //std::cout << "This self-intersection might be spurious. "
+        //             "Degeneracies were detected." << std::endl;
         return true;
     } else {
         return false;
