@@ -1,124 +1,108 @@
-cmake_minimum_required(VERSION 3.15)
-cmake_policy(SET CMP0091 NEW)
+cmake_minimum_required(VERSION 3.18)
 
-project(pycork VERSION 0.1.3)
+project(pycork VERSION 0.1.3 LANGUAGES C CXX)
 
-# Set c++ to use cx11 as a requirement
-set(CMAKE_CXX_STANDARD 11 CACHE STRING "C++ version selection")
+# =========================================================
+# C++ STANDARD
+# =========================================================
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Find includes in corresponding build directories
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+# =========================================================
+# OPTIONS (minimal, no platform logic)
+# =========================================================
+option(BUILD_PYTHON "Build Python module" ON)
+option(BUILD_STATIC "Build static cork library" OFF)
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cMake")
+# =========================================================
+# DEPENDENCY BASE
+# =========================================================
+include(GNUInstallDirs)
+find_package(PkgConfig QUIET)
 
-# Copy the include directory if specified
-set(INCLUDE_INSTALL_DIR "${INCLUDE_INSTALL_DIR}/pycork")
+# =========================================================
+# GMP (bulletproof)
+# =========================================================
+if(PkgConfig_FOUND)
+    pkg_check_modules(GMP QUIET gmp)
+endif()
 
-# Generate DLL Pragma for creating shared libraries in Windows
-include (GenerateExportHeader)
+if(NOT GMP_FOUND OR NOT GMP_LIBRARIES)
+    find_path(GMP_INCLUDE_DIR gmp.h)
+    find_library(GMP_LIBRARY gmp)
 
-add_definitions("-DPROJECT_VERSION=\"${PROJECT_VERSION}\"" )
+    if(GMP_INCLUDE_DIR AND GMP_LIBRARY)
+        set(GMP_INCLUDE_DIRS ${GMP_INCLUDE_DIR})
+        set(GMP_LIBRARIES ${GMP_LIBRARY})
+    else()
+        message(FATAL_ERROR "GMP not found (install libgmp-dev / gmp / vcpkg)")
+    endif()
+endif()
 
-#add_definitions("-DPROJECT_VERSION=\"${PROJECT_VERSION}\"" )
-add_definitions("-DNOMINMAX -DFMT_HEADER_ONLY  -DCORK_DEBUG -DANSI_DECLARATORS -D_USE_MATH_DEFINES -DTRILIBRARY
-                 -DNO_TIMER -DTRIANGLE_INTEL64 -DREDUCED -D _CRT_SECURE_NO_WARNINGS -DCDT_ONLY")
-
-# removed -DCPU86
-
-option(BUILD_PYTHON "Builds a python extension" ON)
-option(BUILD_STATIC "Build cork standalone statically" OFF)
-
-if(WIN32)
-    # Remove Security definitions for the library
-    # Remove run time checks for windows
-
-    add_subdirectory(mpir)
-
-    IF(MSVC)
-
-        set(COMMON_LANGUAGE_RUNTIME "")
-        set(EIGEN3_INCLUDE_DIR external/eigen)
-        add_compile_options(
-            "/GS-"
-            "/INCREMENTAL:NO")
-
-        set(GMP_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/mpir)
-
-        if(BUILD_PYTHON)
-            set(GMP_LIBRARIES mpir_static)
-        else(BUILD_PYTHON)
-            set(GMP_LIBRARIES mpir)
-        endif(BUILD_PYTHON)
-
-    endif(MSVC)
-
-    # Copy the shared libraries and libs to the main directory
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-
-else(WIN32)
-
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-
-    set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
-
-    # Find Required packages
-    find_package(Eigen3 3.3 REQUIRED)
-    find_package(GMP REQUIRED)
-
-endif(WIN32)
-
-
-# Use the replacement of Boost::filesystem from a git submodule provided by WJakob
-# in order to reduce compile time dependencies
-# https://github.com/wjakob/filesystem
-
-set(CPP_FILESYSTEM
-    external/filesystem
+# =========================================================
+# Eigen (header-only)
+# =========================================================
+find_path(EIGEN_INCLUDE_DIR
+    NAMES Eigen/Core
+    PATHS /usr/include/eigen3 /usr/local/include/eigen3
 )
 
-## A replacement library for std::Format
-set(CPP_FMT
-    external/fmt/include
+if(NOT EIGEN_INCLUDE_DIR)
+    message(FATAL_ERROR "Eigen not found (install libeigen3-dev)")
+endif()
+
+# =========================================================
+# fmt (hybrid: system or header-only fallback)
+# =========================================================
+find_package(fmt CONFIG QUIET)
+
+if(NOT fmt_FOUND)
+    find_path(FMT_INCLUDE_DIR fmt/core.h
+        PATHS external/fmt/include /usr/include /usr/local/include
+    )
+
+    if(NOT FMT_INCLUDE_DIR)
+        message(FATAL_ERROR "fmt not found")
+    endif()
+endif()
+
+# =========================================================
+# filesystem (vendored)
+# =========================================================
+set(FILESYSTEM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/external/filesystem)
+
+# =========================================================
+# pybind11
+# =========================================================
+add_subdirectory(external/pybind11)
+
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+
+# =========================================================
+# GLOBAL DEFINES (cleaned)
+# =========================================================
+# CORK_DEBUG 
+add_compile_definitions(
+    PROJECT_VERSION=\"${PROJECT_VERSION}\"
+    NOMINMAX
+    FMT_HEADER_ONLY
+    _USE_MATH_DEFINES
+    ANSI_DECLARATORS
+    TRIANGLE_INTEL64
+    REDUCED
+    CDT_ONLY   
+    ANSI_DECLARATORS 
+    _USE_MATH_DEFINES
+    TRILIBRARY
+    NO_TIMER 
+    _CRT_SECURE_NO_WARNINGS
 )
 
-#add_definitions("-DFMT_HEADER_ONLY=1 -DNO_TIMER -DANSI_DECLARATORS -DREDUCED -DTRIANGLE_INTEL64 -CDT_ONLY -DCPU86 -DTRILIBRARY -DANSI_DECLARATORS -D_USE_MATH_DEFINES - -")
-
-#add_compile_definitions(
-
-link_directories(
-    ${GMP_LIBRARY_DIR}
-)
-
-if(BUILD_PYTHON)
-    message(STATUS "Building PyCork Python Module")
-
-    add_subdirectory(external/pybind11)
-
-    set(PYBIND11_CPP_STANDARD /std:c++11)
-
-
-endif(BUILD_PYTHON)
-
-include_directories(
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_BINARY_DIR}
-    ${GMP_INCLUDE_DIRS}
-
-    ${EIGEN3_INCLUDE_DIR}
-    ${CPP_FILESYSTEM}
-    ${CPP_FMT}
-)
-
-link_directories(
-    ${GMP_LIBRARIES}
-)
-
-set(APP_H_SRCS
+# =========================================================
+# CORE SOURCES
+# =========================================================
+set(CORK_SOURCES
     cork/cork.h
     cork/accel/aabvh.h
     cork/file_formats/files.h
@@ -145,9 +129,7 @@ set(APP_H_SRCS
     cork/mesh/mesh.isct.tpp
     cork/mesh/mesh.bool.tpp
     cork/mesh/mesh.cpp
-)
 
-set(APP_CPP_SRCS
     cork/cork.cpp
     cork/file_formats/files.cpp
     cork/file_formats/ifs.cpp
@@ -157,128 +139,81 @@ set(APP_CPP_SRCS
     cork/isct/triangle.cpp
     cork/util/log.cpp
     cork/util/timer.cpp
-
 )
 
-set(APP_SRCS
-    ${APP_H_SRCS}
-    ${APP_CPP_SRCS}
+# =========================================================
+# STATIC CORE LIB
+# =========================================================
+add_library(cork_static STATIC ${CORK_SOURCES})
+
+target_include_directories(cork_static PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${GMP_INCLUDE_DIRS}
+    ${EIGEN_INCLUDE_DIR}
+    ${FMT_INCLUDE_DIR}
+    ${FILESYSTEM_INCLUDE_DIR}
 )
 
-SOURCE_GROUP("App" FILES
-    ${APP_SRCS}
-)
-
-set(LIBCORK_SRCS
-    ${APP_SRCS}
-)
-
-set(PYCORK_LIBS
+target_link_libraries(cork_static PRIVATE
     ${GMP_LIBRARIES}
-    )
-
-if(BUILD_PYTHON)
-    # Add the library
-
-    message(STATUS "Building PyCork Python-  Static Library")
-
-    add_definitions("-DCORK_BUILT_AS_STATIC")
-    add_library(cork_static STATIC ${LIBCORK_SRCS})
-
-    target_link_libraries(cork_static PRIVATE ${PYCORK_LIBS})
-    GENERATE_EXPORT_HEADER(cork_static
-                 BASE_NAME CORK
-                 EXPORT_MACRO_NAME CORK_EXPORT
-                 EXPORT_FILE_NAME CORK_Export.h
-                 STATIC_DEFINE CORK_BUILT_AS_STATIC)
-
-
-else(BUILD_PYTHON)
-    message(STATUS "Building Cork Module Standalone - Library")
-
-    if(BUILD_STATIC)
-        add_library(cork STATIC ${LIBCORK_SRCS})
-        if (MSVC)
-            set_property(TARGET cork PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-        endif()
-    else(BUILD_STATIC)
-        add_library(cork SHARED ${LIBCORK_SRCS})
-        if (MSVC)
-            set_property(TARGET cork PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-        endif()
-    endif(BUILD_STATIC)
-    target_link_libraries(cork ${PYCORK_LIBS})
-
-    GENERATE_EXPORT_HEADER(cork
-                 BASE_NAME CORK
-                 EXPORT_MACRO_NAME CORK_EXPORT
-                 EXPORT_FILE_NAME CORK_Export.h
-                 STATIC_DEFINE CORK_BUILT_AS_STATIC)
-
-endif(BUILD_PYTHON)
-
-set(App_SRCS
-    cork/main.cpp
 )
 
-SOURCE_GROUP("App" FILES ${App_SRCS})
+# =========================================================
+# EXPORT HEADER (required, kept clean)
+# =========================================================
+include(GenerateExportHeader)
 
+generate_export_header(cork_static
+    BASE_NAME cork
+    EXPORT_MACRO_NAME CORK_EXPORT
+    EXPORT_FILE_NAME CORK_Export.h
+    STATIC_DEFINE CORK_STATIC_BUILD
+)
+
+target_include_directories(cork_static PUBLIC
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+# =========================================================
+# PYTHON MODULE
+# =========================================================
 if(BUILD_PYTHON)
 
-    set(PYCORK_SRCS
+    message(STATUS "Building pycork Python module")
 
+    set(PYCORK_SOURCES
         python/pycork/module.cpp
     )
 
-    SOURCE_GROUP("Python" FILES ${PYCORK_SRCS})
+    pybind11_add_module(pycork MODULE ${PYCORK_SOURCES})
 
-    pybind11_add_module(pycork ${PYCORK_SRCS})
+    target_link_libraries(pycork PRIVATE
+        pybind11::module
+        cork_static
+        ${GMP_LIBRARIES}
+    )
 
-    #add_library(example MODULE main.cpp)
+    set_target_properties(pycork PROPERTIES
+        PREFIX ""
+        SUFFIX "${Python3_EXTENSION_MODULE_SUFFIX}"
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+    )
 
-    target_link_libraries(pycork PRIVATE pybind11::module cork_static ${PYCORK_LIBS})
-    set_target_properties(pycork PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
-                                          SUFFIX "${PYTHON_MODULE_EXTENSION}")
+    install(TARGETS pycork
+        LIBRARY DESTINATION pycork
+        RUNTIME DESTINATION pycork
+    )
 
+endif()
 
-     add_executable(main ${App_SRCS})
-     target_link_libraries(main cork_static ${PYCORK_LIBS})
+# =========================================================
+# CLI TOOL (optional)
+# =========================================================
+add_executable(main cork/main.cpp)
 
-    install(TARGETS pycork DESTINATION lib/pycork)
-    install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/CORK_Export.h
-    ${APP_H_SRCS}
-    DESTINATION include/pycork
+target_link_libraries(main PRIVATE
+    cork_static
+    ${GMP_LIBRARIES}
 )
-
-    #install(TARGETS mpir_static DESTINATION )
-else(BUILD_PYTHON)
-
-
-    add_executable(main ${App_SRCS})
-    
-    if(BUILD_STATIC)
-        if (MSVC)
-            set_property(TARGET main PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-        endif()
-    else(BUILD_STATIC)
-        if (MSVC)
-            set_property(TARGET main PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-        endif()
-    endif(BUILD_STATIC)
-
-    target_link_libraries(main cork ${PYCORK_LIBS})
-    install(TARGETS cork DESTINATION lib/cork)
-    #install(FILES
-    #${CMAKE_CURRENT_BINARY_DIR}/CORK_Export.h
-    #${APP_H_SRCS}
-    #DESTINATION include/cork
-    #)
-    install(DIRECTORY cork/ DESTINATION include/cork FILES_MATCHING REGEX "/.*(\.h|\.tpp)$")
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CORK_Export.h DESTINATION include/cork)
-    install(DIRECTORY external/eigen/ DESTINATION include/eigen FILES_MATCHING REGEX "/([^.]+|.*\.h)$")
-
-    #install(TARGETS mpir DESTINATION )
-
-endif(BUILD_PYTHON)
-
