@@ -49,12 +49,22 @@ jobs:
         run: |
           choco install cmake -y
 
-      # ---------- Build wheel ----------
-      - name: Build wheel
+      - name: Build universal wheel (macOS)
+        if: runner.os == 'macOS'
+        env:
+          CMAKE_OSX_ARCHITECTURES: "x86_64;arm64"
         run: |
-          python -m pip install .
+          python -m pip install -U pip build setuptools wheel
+          rm -rf build dist
           python -m build --wheel
 
+      - name: Build wheel (other OS)
+        if: runner.os != 'macOS'
+        run: |
+          python -m pip install -U pip build setuptools wheel
+          rm -rf build dist
+          python -m build --wheel
+          
       # ---------- Upload artifacts ----------
       - name: Upload wheels
         uses: actions/upload-artifact@v4
