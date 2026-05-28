@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.os }} - Python ${{ matrix.python }}
+    name: ${{ matrix.os }} ${{ matrix.arch }} - Python ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -28,7 +28,7 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Upgrade pip
-        run: python -m pip install -U pip setuptools wheel build cython
+        run: python -m pip install -U pip setuptools wheel build cython scikit-build-core
 
       # ---------- Linux deps ----------
       - name: Install Linux dependencies
@@ -52,18 +52,23 @@ jobs:
       - name: Build universal wheel (macOS)
         if: runner.os == 'macOS'
         env:
-          CMAKE_OSX_ARCHITECTURES: "x86_64;arm64"
+          ARCHFLAGS: "-arch arm64 -arch x86_64"
+          CMAKE_OSX_ARCHITECTURES: "arm64;x86_64"
+          CMAKE_OSX_DEPLOYMENT_TARGET: "10.12"
+          CMAKE_ARGS: "-DCYTHONIZE=ON"
         run: |
-          python -m pip install -U pip build setuptools wheel
+          python -m pip install .
           rm -rf build dist
           python -m build --wheel --no-isolation
 
       - name: Build wheel (other OS)
         if: runner.os != 'macOS'
+        env:
+          CMAKE_ARGS: "-DCYTHONIZE=ON"
         run: |
-          python -m pip install -U pip build setuptools wheel
+          python -m pip install .
           python -m build --wheel --no-isolation
-          
+
       # ---------- Upload artifacts ----------
       - name: Upload wheels
         uses: actions/upload-artifact@v4
