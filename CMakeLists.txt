@@ -43,15 +43,8 @@ endif()
 # =========================================================
 # Eigen (header-only)
 # =========================================================
-# find_path(EIGEN_INCLUDE_DIR
-#    NAMES Eigen/Core
-#    PATHS /usr/include/eigen3 /usr/local/include/eigen3 /opt/homebrew/opt/eigen@3
-#)
 find_package(Eigen3 CONFIG REQUIRED)
 
-if(NOT EIGEN_INCLUDE_DIR)
-    message(FATAL_ERROR "Eigen not found (install libeigen3-dev)")
-endif()
 
 # =========================================================
 # fmt (hybrid: system or header-only fallback)
@@ -151,13 +144,13 @@ target_include_directories(cork_static PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${GMP_INCLUDE_DIRS}
-    ${EIGEN_INCLUDE_DIR}
     ${FMT_INCLUDE_DIR}
     ${FILESYSTEM_INCLUDE_DIR}
 )
 
 target_link_libraries(cork_static PRIVATE
     ${GMP_LIBRARIES}
+    Eigen3::Eigen
 )
 
 # =========================================================
