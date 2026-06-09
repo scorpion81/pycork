@@ -186,6 +186,7 @@ if(BUILD_PYTHON)
         pybind11::module
         cork_static
         ${GMP_LIBRARIES}
+        Eigen3::Eigen
     )
 
     set_target_properties(pycork PROPERTIES
@@ -210,4 +211,5 @@ add_executable(main cork/main.cpp)
 target_link_libraries(main PRIVATE
     cork_static
     ${GMP_LIBRARIES}
+    Eigen3::Eigen
 )
