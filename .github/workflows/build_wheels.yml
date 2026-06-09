@@ -56,7 +56,8 @@ jobs:
       - name: Install Windows dependencies
         if: runner.os == 'Windows'
         run: |
-          vcpkg install cmake gmp:x64-windows -y
+          choco install cmake -y
+          vcpkg install gmp:x64-windows -y
 
       - name: Build universal wheel (macOS)
         if: runner.os == 'macOS'
