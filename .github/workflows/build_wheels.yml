@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.os }} ${{ matrix.arch }} - Python ${{ matrix.python }}
+    name: ${{ matrix.os }} - Python ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -39,7 +39,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libeigen3-dev libgmp-dev
+          sudo apt-get install -y build-essential cmake libeigen3-dev libgmp-dev libfmt-dev
 
       # ---------- macOS deps ----------
       - name: Install macOS dependencies
