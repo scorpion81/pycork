@@ -57,7 +57,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           choco install cmake -y
-          vcpkg install gmp:x64-windows -y
+          vcpkg install gmp:x64-windows
 
       - name: Build universal wheel (macOS)
         if: runner.os == 'macOS'
