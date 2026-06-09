@@ -43,10 +43,11 @@ endif()
 # =========================================================
 # Eigen (header-only)
 # =========================================================
-find_path(EIGEN_INCLUDE_DIR
-    NAMES Eigen/Core
-    PATHS /usr/include/eigen3 /usr/local/include/eigen3 /opt/homebrew/opt/eigen@3
-)
+# find_path(EIGEN_INCLUDE_DIR
+#    NAMES Eigen/Core
+#    PATHS /usr/include/eigen3 /usr/local/include/eigen3 /opt/homebrew/opt/eigen@3
+#)
+find_package(Eigen3 REQUIRED)
 
 if(NOT EIGEN_INCLUDE_DIR)
     message(FATAL_ERROR "Eigen not found (install libeigen3-dev)")
