@@ -6,9 +6,9 @@ on:
       - "v*"
   workflow_dispatch:
     inputs:
-        make_release:
-          type: boolean
-          default: false
+      make_release:
+        type: boolean
+        default: false
   pull_request:
 
 jobs:
