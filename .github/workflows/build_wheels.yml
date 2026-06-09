@@ -9,6 +9,9 @@ on:
       make_release:
         type: boolean
         default: false
+      version:
+        description: "Release version"
+        required: true
   pull_request:
 
 jobs:
@@ -85,20 +88,33 @@ jobs:
     name: Create GitHub Release
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || ${{ github.event.inputs.make_release == 'true' }}
+    if: ${{ github.event.inputs.make_release == 'true' }}
 
     steps:
-      - name: Download all artifacts
+      - name: Download all wheels
         uses: actions/download-artifact@v4
         with:
           path: dist
 
-      - name: Flatten artifacts
+      - name: Flatten
         run: |
           mkdir release
-          find dist -name "*.whl" -exec cp {} release/ \;
+          find dist -name "*.whl" -exec mv {} release/ \;
 
-      - name: Create Release
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: PyCork v${{ steps.version.outputs.version }}
           files: release/*.whl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
