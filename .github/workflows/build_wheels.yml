@@ -28,6 +28,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:  
+          submodules: recursive
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -42,13 +44,13 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libeigen3-dev libgmp-dev libfmt-dev
+          sudo apt-get install -y build-essential cmake libeigen3-dev libgmp-dev
 
       # ---------- macOS deps ----------
       - name: Install macOS dependencies
         if: runner.os == 'macOS'
         run: |
-          brew install cmake eigen
+          brew install cmake eigen3
 
       # ---------- Windows deps ----------
       - name: Install Windows dependencies
