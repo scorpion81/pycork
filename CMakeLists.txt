@@ -45,7 +45,7 @@ endif()
 # =========================================================
 find_path(EIGEN_INCLUDE_DIR
     NAMES Eigen/Core
-    PATHS /usr/include/eigen3 /usr/local/include/eigen3
+    PATHS /usr/include/eigen3 /usr/local/include/eigen3 /opt/homebrew/opt/eigen@3
 )
 
 if(NOT EIGEN_INCLUDE_DIR)
