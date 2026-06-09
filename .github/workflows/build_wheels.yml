@@ -45,7 +45,7 @@ jobs:
       - name: Install macOS dependencies
         if: runner.os == 'macOS'
         run: |
-          brew install cmake
+          brew install cmake eigen
 
       # ---------- Windows deps ----------
       - name: Install Windows dependencies
