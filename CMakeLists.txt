@@ -132,11 +132,15 @@ set(CORK_SOURCES
 # =========================================================
 add_library(cork_static STATIC ${CORK_SOURCES})
 
+get_target_property(gmp_INCLUDES GMP::gmp INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "GMP interface includes: ${gmp_INCLUDES}")
+get_target_property(gmp_INCLUDES GMP::gmp INCLUDE_DIRECTORIES)
+message(STATUS "GMP includes: ${gmp_INCLUDES}")
+
 target_include_directories(cork_static PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    #${gmp_INCLUDE_DIRS}
-    GMP::gmp
+    ${gmp_INCLUDES}
     ${FMT_INCLUDE_DIR}
     ${FILESYSTEM_INCLUDE_DIR}
 )
