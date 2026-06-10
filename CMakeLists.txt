@@ -140,7 +140,7 @@ message(STATUS "GMP includes: ${gmp_INCLUDES}")
 target_include_directories(cork_static PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${gmp_INCLUDES}
+#    ${gmp_INCLUDES}
     ${FMT_INCLUDE_DIR}
     ${FILESYSTEM_INCLUDE_DIR}
 )
