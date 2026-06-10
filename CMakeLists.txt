@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
 project(pycork VERSION 0.1.3 LANGUAGES C CXX)
-set(CMAKE_TOOLCHAIN_FILE ${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 
 # =========================================================
 # C++ STANDARD
@@ -19,42 +18,18 @@ option(BUILD_STATIC "Build static cork library" OFF)
 # =========================================================
 # DEPENDENCY BASE
 # =========================================================
-include(GNUInstallDirs)
-find_package(PkgConfig REQUIRED)
-
-set(ARCH x64)
-set(INTEL $ENV{VCPKG_ROOT}/installed/x64-linux/lib/pkgconfig)
-set(ARM $ENV{VCPKG_ROOT}/installed/arm64-linux/lib/pkgconfig)
-
-if(APPLE)
-    set(INTEL $ENV{VCPKG_ROOT}/installed/x64-osx/lib/pkgconfig)
-    set(ARM $ENV{VCPKG_ROOT}/installed/arm64-osx/lib/pkgconfig)
-    set(ARCH ${CMAKE_OSX_ARCHITECTURES})
-endif()
-
-if (WIN32)
-    set(INTEL $ENV{VCPKG_ROOT}/installed/x64-windows/lib/pkgconfig)
-    set(ARM $ENV{VCPKG_ROOT}/installed/arm64-windows/lib/pkgconfig)
-endif()
-
-if(${ARCH} STREQUAL "arm64")
-    set(ENV{PKG_CONFIG_PATH}
-        ${ARM}
-    )
+if(WIN32)
+    add_subdirectory(mpir)
+    if(BUILD_PYTHON)
+        add_library(GMP::gmp ALIAS mpir_static)
+    else()
+        add_library(GMP::gmp ALIAS mpir)
+    endif()
 else()
-    set(ENV{PKG_CONFIG_PATH}
-        ${INTEL}
-    )
-endif()
-
-message(STATUS "PKG_CONFIG_PATH is $ENV{PKG_CONFIG_PATH}")
-
-# =========================================================
-# GMP from vcpkg
-# =========================================================
-pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
-add_library(GMP::gmp ALIAS PkgConfig::gmp)
-
+    include(GNUInstallDirs)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
+    add_library(GMP::gmp ALIAS PkgConfig::gmp)
 
 # =========================================================
 # Eigen (header-only, vendored)
