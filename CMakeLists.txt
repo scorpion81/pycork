@@ -18,17 +18,13 @@ option(BUILD_STATIC "Build static cork library" OFF)
 # =========================================================
 # DEPENDENCY BASE
 # =========================================================
-include(GNUInstallDirs)
-find_package(PkgConfig REQUIRED)
+#include(GNUInstallDirs)
+#find_package(PkgConfig REQUIRED)
 
 # =========================================================
-# GMP via vcpkg in macos, windows, and libgmp-dev in linux
+# MPIR, it is bundled so use it instead of GMP
 # =========================================================
-if(PkgConfig_FOUND)
-    pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
-   # message("GMP include dir", ${PkgConfig::gmp_INCLUDE_DIRS})
-endif()
-
+add_subdirectory(mpir)
 
 # =========================================================
 # Eigen (header-only, vendored)
@@ -139,7 +135,7 @@ target_include_directories(cork_static PUBLIC
 )
 
 target_link_libraries(cork_static PRIVATE
-    PkgConfig::gmp
+    mpir
     Eigen3::Eigen
 )
 
@@ -175,7 +171,7 @@ if(BUILD_PYTHON)
     target_link_libraries(pycork PRIVATE
         pybind11::module
         cork_static
-        PkgConfig::gmp
+        mpir
         Eigen3::Eigen
     )
 
@@ -200,6 +196,6 @@ add_executable(main cork/main.cpp)
 
 target_link_libraries(main PRIVATE
     cork_static
-    PkgConfig::gmp
+    mpir
     Eigen3::Eigen
 )

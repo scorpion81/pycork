@@ -605,7 +605,7 @@ configure_file(gmp-h-msvc.in gmp.h @ONLY)
 
 if(BUILD_PYTHON)
     add_library(mpir_static STATIC ${ALL_FILES})
-elseif()
+elseif(BUILD_PYTHON)
 add_library(mpir STATIC ${ALL_FILES})
 endif(BUILD_PYTHON)
 
