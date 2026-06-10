@@ -24,8 +24,7 @@ find_package(PkgConfig REQUIRED)
 
 if(APPLE)
     set(ENV{PKG_CONFIG_PATH}
-        "${VCPKG_ROOT}/installed/arm64-osx/lib/pkgconfig"
-        "${VCPKG_ROOT}/installed/x64-osx/lib/pkgconfig"
+        ENV{VCPKG_ROOT}+"/installed/arm64-osx/lib/pkgconfig:"+ENV{VCPKG_ROOT}+"/installed/x64-osx/lib/pkgconfig"
     )
 endif()
 
