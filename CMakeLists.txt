@@ -16,47 +16,31 @@ option(BUILD_PYTHON "Build Python module" ON)
 option(BUILD_STATIC "Build static cork library" OFF)
 
 # =========================================================
-# DEPENDENCY BASE
+# GMP (vendored)
 # =========================================================
-include(GNUInstallDirs)
-find_package(PkgConfig QUIET)
+include(ExternalProject)
 
-# =========================================================
-# GMP
-# =========================================================
-if(PkgConfig_FOUND)
-    pkg_check_modules(GMP QUIET gmp)
-endif()
+ExternalProject_Add(gmp
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/extern/gmp
+    CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/gmp-install
+    BUILD_COMMAND make
+    INSTALL_COMMAND make install
+)
 
-if(GMP_FOUND)
-    add_library(GMP::gmp INTERFACE IMPORTED)
+add_library(GMP::gmp INTERFACE IMPORTED)
 
-    set_target_properties(GMP::gmp PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${GMP_INCLUDE_DIRS}"
-        INTERFACE_LINK_LIBRARIES "${GMP_LINK_LIBRARIES}"
-    )
+target_include_directories(GMP::gmp INTERFACE
+    ${CMAKE_SOURCE_DIR}/extern/gmp/include
+)
 
-else()
-    find_path(GMP_INCLUDE_DIR gmp.h)
-    find_library(GMP_LIBRARY NAMES gmp)
-
-    if(NOT GMP_INCLUDE_DIR OR NOT GMP_LIBRARY)
-        message(FATAL_ERROR "GMP not found")
-    endif()
-
-    add_library(GMP::gmp UNKNOWN IMPORTED)
-
-    set_target_properties(GMP::gmp PROPERTIES
-        IMPORTED_LOCATION "${GMP_LIBRARY}"
-        INTERFACE_INCLUDE_DIRECTORIES "${GMP_INCLUDE_DIR}"
-    )
-endif()
+target_link_libraries(GMP::gmp INTERFACE
+    ${CMAKE_BINARY_DIR}/gmp-install/libgmp.a
+)
 
 # =========================================================
-# Eigen (header-only)
+# Eigen (header-only, vendored)
 # =========================================================
-find_package(Eigen3 CONFIG REQUIRED)
-
+add_subdirectory(extern/eigen)
 
 # =========================================================
 # fmt (hybrid: system or header-only fallback)
@@ -72,6 +56,7 @@ if(NOT fmt_FOUND)
         message(FATAL_ERROR "fmt not found")
     endif()
 endif()
+
 
 # =========================================================
 # filesystem (vendored)
