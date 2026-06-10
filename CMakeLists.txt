@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 
 project(pycork VERSION 0.1.3 LANGUAGES C CXX)
+set(CMAKE_TOOLCHAIN_FILE ${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 
 # =========================================================
 # C++ STANDARD
@@ -20,6 +21,27 @@ option(BUILD_STATIC "Build static cork library" OFF)
 # =========================================================
 include(GNUInstallDirs)
 find_package(PkgConfig REQUIRED)
+
+if(APPLE)
+    set(ENV{PKG_CONFIG_PATH}
+        "${VCPKG_ROOT}/installed/arm64-osx/lib/pkgconfig"
+        "${VCPKG_ROOT}/installed/x64-osx/lib/pkgconfig"
+    )
+endif()
+
+if (WIN32)
+    set(ENV{PKG_CONFIG_PATH}
+        "${VCPKG_ROOT}/installed/arm64-windows/lib/pkgconfig"
+        "${VCPKG_ROOT}/installed/x64-windows/lib/pkgconfig"
+    )
+endif()
+
+if (LINUX)
+    set(ENV{PKG_CONFIG_PATH}
+        "${VCPKG_ROOT}/installed/arm64-linux/lib/pkgconfig"
+        "${VCPKG_ROOT}/installed/x64-linux/lib/pkgconfig"
+    )
+endif()
 
 # =========================================================
 # GMP from vcpkg
