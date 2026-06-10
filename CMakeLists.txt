@@ -25,9 +25,8 @@ find_package(PkgConfig REQUIRED)
 # GMP via vcpkg in macos, windows, and libgmp-dev in linux
 # =========================================================
 if(PkgConfig_FOUND)
-    pkg_check_modules(gmp REQUIRED IMPORTED_TARGET)
-    get_target_property(gmp_include_dir PkgConfig::gmp, INCLUDE_DIRECTORIES)
-    message("GMP include dir", ${gmp_include_dir})
+    pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
+   # message("GMP include dir", ${PkgConfig::gmp_INCLUDE_DIRS})
 endif()
 
 
@@ -134,7 +133,7 @@ add_library(cork_static STATIC ${CORK_SOURCES})
 target_include_directories(cork_static PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${gmp_include_dir}
+#    ${gmp_INCLUDE_DIRS}
     ${FMT_INCLUDE_DIR}
     ${FILESYSTEM_INCLUDE_DIR}
 )
