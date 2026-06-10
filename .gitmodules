@@ -13,6 +13,3 @@
 [submodule "external/mpir"]
 	path = external/mpir
 	url = https://github.com/BrianGladman/mpir.git
-[submodule "external/gmp"]
-	path = external/gmp
-	url = https://github.com/gmp-mirror/gmp-6.3.git
