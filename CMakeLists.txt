@@ -18,42 +18,14 @@ option(BUILD_STATIC "Build static cork library" OFF)
 # =========================================================
 # DEPENDENCY BASE
 # =========================================================
-#include(GNUInstallDirs)
-#find_package(PkgConfig REQUIRED)
+include(GNUInstallDirs)
+find_package(PkgConfig REQUIRED)
 
 # =========================================================
-# MPIR, it is bundled so use it instead of GMP
+# GMP from vcpkg
 # =========================================================
-if(WIN32)
-    message(STATUS "Using MPIR on windows")
-    add_subdirectory(mpir)
-    if(BUILD_PYTHON)
-        add_library(GMP::gmp ALIAS mpir_static)
-    else()
-        add_library(GMP::gmp ALIAS mpir)
-    endif()
-else()
-    message(STATUS "Using external/mpir with autoconf on linux/mac")
-    include(ExternalProject)
-
-    ExternalProject_Add(gmp_ext
-        SOURCE_DIR ${CMAKE_SOURCE_DIR}/external/mpir
-        CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/gpm-install
-        BUILD_COMMAND make
-        INSTALL_COMMAND make install
-    )
-
-    set(GMP_PREFIX ${CMAKE_BINARY_DIR}/gmp-install)
-
-    add_library(GMP::gmp STATIC IMPORTED GLOBAL)
-    add_dependencies(GMP::gmp gmp_ext)
-
-    set_target_properties(GMP::gmp PROPERTIES
-        IMPORTED_LOCATION "${GMP_PREFIX}/lib/libgmp.a"
-        INTERFACE_INCLUDE_DIRECTORIES "${GMP_PREFIX}/include"
-    )
-
-endif()
+pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
+add_library(GMP::gmp ALIAS PkgConfig::gmp)
 
 
 # =========================================================
