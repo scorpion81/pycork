@@ -134,7 +134,8 @@ add_library(cork_static STATIC ${CORK_SOURCES})
 
 set(gmp_INCLUDES "")
 if (WIN32)
-    get_target_property(gmp_INCLUDES GMP::gmp INCLUDE_DIRECTORIES)
+    #get_target_property(gmp_INCLUDES GMP::gmp INCLUDE_DIRECTORIES)
+    set(gmp_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/mpir)
     message(STATUS "GMP includes: ${gmp_INCLUDES}")
 endif()
 
