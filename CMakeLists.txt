@@ -22,22 +22,34 @@ include(GNUInstallDirs)
 find_package(PkgConfig QUIET)
 
 # =========================================================
-# GMP (bulletproof)
+# GMP
 # =========================================================
 if(PkgConfig_FOUND)
     pkg_check_modules(GMP QUIET gmp)
 endif()
 
-if(NOT GMP_FOUND OR NOT GMP_LIBRARIES)
-    find_path(GMP_INCLUDE_DIR gmp.h)
-    find_library(GMP_LIBRARY gmp)
+if(GMP_FOUND)
+    add_library(GMP::gmp INTERFACE IMPORTED)
 
-    if(GMP_INCLUDE_DIR AND GMP_LIBRARY)
-        set(GMP_INCLUDE_DIRS ${GMP_INCLUDE_DIR})
-        set(GMP_LIBRARIES ${GMP_LIBRARY})
-    else()
-        message(FATAL_ERROR "GMP not found (install libgmp-dev / gmp / vcpkg)")
+    set_target_properties(GMP::gmp PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${GMP_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${GMP_LINK_LIBRARIES}"
+    )
+
+else()
+    find_path(GMP_INCLUDE_DIR gmp.h)
+    find_library(GMP_LIBRARY NAMES gmp)
+
+    if(NOT GMP_INCLUDE_DIR OR NOT GMP_LIBRARY)
+        message(FATAL_ERROR "GMP not found")
     endif()
+
+    add_library(GMP::gmp UNKNOWN IMPORTED)
+
+    set_target_properties(GMP::gmp PROPERTIES
+        IMPORTED_LOCATION "${GMP_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${GMP_INCLUDE_DIR}"
+    )
 endif()
 
 # =========================================================
@@ -149,7 +161,7 @@ target_include_directories(cork_static PUBLIC
 )
 
 target_link_libraries(cork_static PRIVATE
-    ${GMP_LIBRARIES}
+    GMP::gmp
     Eigen3::Eigen
 )
 
@@ -185,7 +197,7 @@ if(BUILD_PYTHON)
     target_link_libraries(pycork PRIVATE
         pybind11::module
         cork_static
-        ${GMP_LIBRARIES}
+        GMP::gmp
         Eigen3::Eigen
     )
 
@@ -210,6 +222,6 @@ add_executable(main cork/main.cpp)
 
 target_link_libraries(main PRIVATE
     cork_static
-    ${GMP_LIBRARIES}
+    GMP::gmp
     Eigen3::Eigen
 )
