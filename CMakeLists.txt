@@ -40,7 +40,7 @@ target_link_libraries(GMP::gmp INTERFACE
 # =========================================================
 # Eigen (header-only, vendored)
 # =========================================================
-add_subdirectory(extern/eigen)
+add_subdirectory(external/eigen)
 
 # =========================================================
 # fmt (hybrid: system or header-only fallback)
