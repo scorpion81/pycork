@@ -22,12 +22,14 @@ option(BUILD_STATIC "Build static cork library" OFF)
 include(GNUInstallDirs)
 find_package(PkgConfig REQUIRED)
 
+set(ARCH x64)
 set(INTEL $ENV{VCPKG_ROOT}/installed/x64-linux/lib/pkgconfig)
 set(ARM $ENV{VCPKG_ROOT}/installed/arm64-linux/lib/pkgconfig)
 
 if(APPLE)
     set(INTEL $ENV{VCPKG_ROOT}/installed/x64-osx/lib/pkgconfig)
     set(ARM $ENV{VCPKG_ROOT}/installed/arm64-osx/lib/pkgconfig)
+    set(ARCH ${CMAKE_OSX_ARCHITECTURES})
 endif()
 
 if (WIN32)
