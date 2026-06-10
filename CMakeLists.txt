@@ -20,7 +20,7 @@ option(BUILD_STATIC "Build static cork library" OFF)
 # =========================================================
 include(ExternalProject)
 
-ExternalProject_Add(gmp
+ExternalProject_Add(gmp_ext
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/external/gmp
     CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/gmp-install
     BUILD_COMMAND make
@@ -28,13 +28,16 @@ ExternalProject_Add(gmp
 )
 
 add_library(GMP::gmp INTERFACE IMPORTED)
+add_dependencies(GMP::gmp gmp_ext)
 
-target_include_directories(GMP::gmp INTERFACE
-    ${CMAKE_SOURCE_DIR}/external/gmp/include
-)
+set(GMP_PREFIX ${CMAKE_BINARY_DIR}/gmp-install)
 
-target_link_libraries(GMP::gmp INTERFACE
-    ${CMAKE_BINARY_DIR}/gmp-install/libgmp.a
+set_target_properties(GMP::gmp PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES
+        "${GMP_PREFIX}/include"
+
+    INTERFACE_LINK_LIBRARIES
+        "${GMP_PREFIX}/lib/libgmp.a"
 )
 
 # =========================================================
