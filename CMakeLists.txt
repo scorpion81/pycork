@@ -43,17 +43,14 @@ else()
         INSTALL_COMMAND make install
     )
 
-    add_library(GMP::gmp INTERFACE IMPORTED)
-    add_dependencies(GMP::gmp gmp_ext)
-
     set(GMP_PREFIX ${CMAKE_BINARY_DIR}/gmp-install)
 
-    set_target_properties(GMP::gmp PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES
-            "${GMP_PREFIX}/include"
+    add_library(GMP::gmp STATIC IMPORTED GLOBAL)
+    add_dependencies(GMP::gmp gmp_ext)
 
-        INTERFACE_LINK_LIBRARIES
-            "${GMP_PREFIX}/lib/libgmp.a"
+    set_target_properties(GMP::gmp PROPERTIES
+        IMPORTED_LOCATION "${GMP_PREFIX}/lib/libgmp.a"
+        INTERFACE_INCLUDE_DIRECTORIES "${GMP_PREFIX}/include"
     )
 
 endif()
