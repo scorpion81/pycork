@@ -32,12 +32,12 @@ add_dependencies(GMP::gmp gmp_ext)
 
 set(GMP_PREFIX ${CMAKE_BINARY_DIR}/gmp-install)
 
-set_target_properties(GMP::gmp PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES
-        "${GMP_PREFIX}/include"
+target_include_directories(GMP::gmp INTERFACE
+    ${GMP_PREFIX}/include
+)
 
-    INTERFACE_LINK_LIBRARIES
-        "${GMP_PREFIX}/lib/libgmp.a"
+target_link_libraries(GMP::gmp INTERFACE
+    ${GMP_PREFIX}/lib/libgmp.a
 )
 
 # =========================================================
