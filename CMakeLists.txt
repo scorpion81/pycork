@@ -30,6 +30,7 @@ else()
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
     add_library(GMP::gmp ALIAS PkgConfig::gmp)
+endif()
 
 # =========================================================
 # Eigen (header-only, vendored)
