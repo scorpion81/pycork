@@ -35,7 +35,7 @@ if (WIN32)
     set(ARM $ENV{VCPKG_ROOT}/installed/arm64-windows/lib/pkgconfig)
 endif()
 
-if(ENV{ARCH} STREQUAL "arm64")
+if(${ARCH} STREQUAL "arm64")
     set(ENV{PKG_CONFIG_PATH}
         ${ARM}
     )
