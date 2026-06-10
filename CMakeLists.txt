@@ -132,7 +132,7 @@ add_library(cork_static STATIC ${CORK_SOURCES})
 target_include_directories(cork_static PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${GMP_INCLUDE_DIRS}
+    ${gmp_INCLUDE_DIRS}
     ${FMT_INCLUDE_DIR}
     ${FILESYSTEM_INCLUDE_DIR}
 )
