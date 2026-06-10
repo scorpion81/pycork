@@ -26,6 +26,8 @@ find_package(PkgConfig REQUIRED)
 # =========================================================
 if(PkgConfig_FOUND)
     pkg_check_modules(gmp REQUIRED IMPORTED_TARGET)
+    get_target_property(gmp_include_dir PkgConfig::gmp, INCLUDE_DIRECTORIES)
+    message("GMP include dir", ${gmp_include_dir})
 endif()
 
 
@@ -132,7 +134,7 @@ add_library(cork_static STATIC ${CORK_SOURCES})
 target_include_directories(cork_static PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${gmp_INCLUDE_DIRS}
+    ${gmp_include_dir}
     ${FMT_INCLUDE_DIR}
     ${FILESYSTEM_INCLUDE_DIR}
 )
