@@ -19,38 +19,15 @@ option(BUILD_STATIC "Build static cork library" OFF)
 # DEPENDENCY BASE
 # =========================================================
 include(GNUInstallDirs)
-find_package(PkgConfig QUIET)
+find_package(PkgConfig REQUIRED)
 
 # =========================================================
 # GMP via vcpkg in macos, windows, and libgmp-dev in linux
 # =========================================================
 if(PkgConfig_FOUND)
-    pkg_check_modules(GMP QUIET gmp)
+    pkg_check_modules(gmp REQUIRED IMPORTED_TARGET)
 endif()
 
-if(GMP_FOUND)
-    add_library(GMP::gmp INTERFACE IMPORTED)
-
-    set_target_properties(GMP::gmp PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${GMP_INCLUDE_DIRS}"
-        INTERFACE_LINK_LIBRARIES "${GMP_LINK_LIBRARIES}"
-    )
-
-else()
-    find_path(GMP_INCLUDE_DIR gmp.h)
-    find_library(GMP_LIBRARY NAMES gmp)
-
-    if(NOT GMP_INCLUDE_DIR OR NOT GMP_LIBRARY)
-        message(FATAL_ERROR "GMP not found")
-    endif()
-
-    add_library(GMP::gmp UNKNOWN IMPORTED)
-
-    set_target_properties(GMP::gmp PROPERTIES
-        IMPORTED_LOCATION "${GMP_LIBRARY}"
-        INTERFACE_INCLUDE_DIRECTORIES "${GMP_INCLUDE_DIR}"
-    )
-endif()
 
 # =========================================================
 # Eigen (header-only, vendored)
@@ -155,13 +132,12 @@ add_library(cork_static STATIC ${CORK_SOURCES})
 target_include_directories(cork_static PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${GMP_INCLUDE_DIRS}
     ${FMT_INCLUDE_DIR}
     ${FILESYSTEM_INCLUDE_DIR}
 )
 
 target_link_libraries(cork_static PRIVATE
-    GMP::gmp
+    PkgConfig::gmp
     Eigen3::Eigen
 )
 
@@ -197,7 +173,7 @@ if(BUILD_PYTHON)
     target_link_libraries(pycork PRIVATE
         pybind11::module
         cork_static
-        GMP::gmp
+        PkgConfig::gmp
         Eigen3::Eigen
     )
 
@@ -222,6 +198,6 @@ add_executable(main cork/main.cpp)
 
 target_link_libraries(main PRIVATE
     cork_static
-    GMP::gmp
+    PkgConfig::gmp
     Eigen3::Eigen
 )
