@@ -24,7 +24,40 @@ option(BUILD_STATIC "Build static cork library" OFF)
 # =========================================================
 # MPIR, it is bundled so use it instead of GMP
 # =========================================================
-add_subdirectory(mpir)
+if(WIN32)
+    message(STATUS "Using MPIR on windows")
+    add_subdirectory(mpir)
+    if(BUILD_PYTHON)
+        add_library(GMP::gmp ALIAS mpir_static)
+    else()
+        add_library(GMP::gmp ALIAS mpir)
+    endif()
+else()
+    message(STATUS "Using external/mpir with autoconf on linux/mac")
+    include(ExternalProject)
+
+    ExternalProject_Add(gmp_ext
+        SOURCE_DIR ${CMAKE_SOURCE_DIR}/external/mpir
+        CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}/gpm-install
+        BUILD_COMMAND make
+        INSTALL_COMMAND make install
+    )
+
+    add_library(GMP::gmp INTERFACE IMPORTED)
+    add_dependencies(GMP::gmp gmp_ext)
+
+    set(GMP_PREFIX ${CMAKE_BINARY_DIR}/gmp-install)
+
+    set_target_properties(GMP::gmp PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES
+            "${GMP_PREFIX}/include"
+
+        INTERFACE_LINK_LIBRARIES
+            "${GMP_PREFIX}/lib/libgmp.a"
+    )
+
+endif()
+
 
 # =========================================================
 # Eigen (header-only, vendored)
@@ -135,7 +168,7 @@ target_include_directories(cork_static PUBLIC
 )
 
 target_link_libraries(cork_static PRIVATE
-    mpir
+    GMP::gmp
     Eigen3::Eigen
 )
 
@@ -171,7 +204,7 @@ if(BUILD_PYTHON)
     target_link_libraries(pycork PRIVATE
         pybind11::module
         cork_static
-        mpir
+        GMP::gmp
         Eigen3::Eigen
     )
 
@@ -196,6 +229,6 @@ add_executable(main cork/main.cpp)
 
 target_link_libraries(main PRIVATE
     cork_static
-    mpir
+    GMP::gmp
     Eigen3::Eigen
 )
