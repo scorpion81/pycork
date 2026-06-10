@@ -22,41 +22,30 @@ option(BUILD_STATIC "Build static cork library" OFF)
 include(GNUInstallDirs)
 find_package(PkgConfig REQUIRED)
 
+set(INTEL $ENV{VCPKG_ROOT}/installed/x64-linux/lib/pkgconfig)
+set(ARM $ENV{VCPKG_ROOT}/installed/arm64-linux/lib/pkgconfig)
+
 if(APPLE)
     set(INTEL $ENV{VCPKG_ROOT}/installed/x64-osx/lib/pkgconfig)
     set(ARM $ENV{VCPKG_ROOT}/installed/arm64-osx/lib/pkgconfig)
-    #message(STATUS ${INTEL}:${ARM})
-
-    set(ENV{PKG_CONFIG_PATH}
-        ${INTEL}:${ARM}
-    )
-
-    message(STATUS "PKG_CONFIG_PATH is $ENV{PKG_CONFIG_PATH}")
-
 endif()
 
 if (WIN32)
     set(INTEL $ENV{VCPKG_ROOT}/installed/x64-windows/lib/pkgconfig)
     set(ARM $ENV{VCPKG_ROOT}/installed/arm64-windows/lib/pkgconfig)
-    #message(STATUS ${INTEL}:${ARM})
-    
-    set(ENV{PKG_CONFIG_PATH}
-        ${INTEL}:${ARM}
-    )
-
-    message(STATUS "PKG_CONFIG_PATH is $ENV{PKG_CONFIG_PATH}")
 endif()
 
-if (LINUX)
-    set(INTEL $ENV{VCPKG_ROOT}/installed/x64-linux/lib/pkgconfig)
-    set(ARM $ENV{VCPKG_ROOT}/installed/arm64-linux/lib/pkgconfig)
-    #message(STATUS ${INTEL}:${ARM})
-    
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
     set(ENV{PKG_CONFIG_PATH}
-        ${INTEL}:${ARM}
+        ${ARM}
     )
-    message(STATUS "PKG_CONFIG_PATH is $ENV{PKG_CONFIG_PATH}")
+else()
+    set(ENV{PKG_CONFIG_PATH}
+        ${INTEL}
+    )
 endif()
+
+message(STATUS "PKG_CONFIG_PATH is $ENV{PKG_CONFIG_PATH}")
 
 # =========================================================
 # GMP from vcpkg
