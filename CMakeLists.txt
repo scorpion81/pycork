@@ -27,9 +27,28 @@ if(WIN32)
     endif()
 else()
     include(GNUInstallDirs)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
-    add_library(GMP::gmp ALIAS PkgConfig::gmp)
+    find_package(PkgConfig QUIET)
+    if (PKG_CONFIG_FOUND)
+        pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
+        add_library(GMP::gmp ALIAS PkgConfig::gmp)
+    else()
+        find_path(GMP_INCLUDE_DIR gmp.h)
+        find_library(GMP_SHARED gmp)
+        find_library(GMP_STATIC gmp.a)
+
+        if(GMP_STATIC)
+            set(GMP_LIBRARY ${GMP_STATIC})
+        else()
+            set(GMP_LIBRARY ${GMP_SHARED})
+        endif()
+
+        add_library(GMP::gmp UNKNOWN IMPORTED)
+
+        set_target_properties(GMP::gmp PROPERTIES
+            IMPORTED_LOCATION "${GMP_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GMP_INCLUDE_DIR}"
+        )
+    endif()
 endif()
 
 # =========================================================
