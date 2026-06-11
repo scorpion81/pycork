@@ -90,7 +90,7 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 # =========================================================
 # CORK_DEBUG 
 add_compile_definitions(
-    PROJECT_VERSION=\"${PROJECT_VERSION}\"
+    PROJECT_VERSION="${PROJECT_VERSION}"
     NOMINMAX
     FMT_HEADER_ONLY
     _USE_MATH_DEFINES
@@ -210,14 +210,12 @@ if(BUILD_PYTHON)
 
     set_target_properties(pycork PROPERTIES
         PREFIX ""
-        SUFFIX "${Python3_EXTENSION_MODULE_SUFFIX}"
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
     )
 
     install(TARGETS pycork
         LIBRARY DESTINATION pycork
-        RUNTIME DESTINATION pycork
     )
 
 endif()
